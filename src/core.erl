@@ -1,20 +1,20 @@
 -module(core).
--export([start/0, runtime/1]).
+-export([start/0, body/1]).
 
 % Author: Tom Apeltauer
 
 start() ->
-	register(?MODULE, spawn(?MODULE, runtime, [dict:new()])).
+	register(?MODULE, spawn(?MODULE, body, [dict:new()])).
 	
-runtime(Dictionary) ->
+body(Dictionary) ->
 	receive
 		{From, store, Data} ->
 			NewDictionary = store(Data, Dictionary),
-			runtime(NewDictionary);
+			body(NewDictionary);
 			%~ TODO: resolve the state and return something to the caller
 		{From, find, Key} ->
 			From ! find(Key, Dictionary),
-			runtime(Dictionary);
+			body(Dictionary);
 		power_off -> ok;
 		_ ->
 			erlang:error("ERROR: ---UEXPECTED INPUT ON CORE MODULE---")
